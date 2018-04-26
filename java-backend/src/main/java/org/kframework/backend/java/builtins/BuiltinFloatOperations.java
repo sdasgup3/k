@@ -304,9 +304,15 @@ public class BuiltinFloatOperations {
             throw new IllegalArgumentException("A float with requested precision and exponentBit cannot be obtained from the input MInt");
         }
 
+<<<<<<< HEAD
         if(termBitwidth != 32 && termBitwidth != 64 && termBitwidth != 16) {
             throw new IllegalArgumentException("Illegal bitwidth provided: "
                     + "Only 16 or 32 or 64 are supported in order to obtain a half precision or single precision or double precision floating point value");
+=======
+        if(termBitwidth != 32 && termBitwidth != 64) {
+            throw new IllegalArgumentException("Illegal bitwidth provided: "
+                    + "Only 32 or 64 are supported in order to obtain a single precision or double precision floating point value");
+>>>>>>> port all changes from k-legacy to k5: The changes are related to implementation of machine float hooks
         }
 
         // Determine the sign.
@@ -315,14 +321,18 @@ public class BuiltinFloatOperations {
         // Determine if a double or single precision floating point is requested and fix constants
         // based on them.
         boolean isDoublePrecision = (precision.intValue() == 53 && exponentBits.intValue() == 11);
+<<<<<<< HEAD
         boolean isSinglePrecision = (precision.intValue() == 24 && exponentBits.intValue() == 8);
         boolean isHalfPrecision   = (precision.intValue() == 11 && exponentBits.intValue() == 5);
 
+=======
+>>>>>>> port all changes from k-legacy to k5: The changes are related to implementation of machine float hooks
         int beginExponent = 1, endExponent = 0 , beginSignificand = 0 , endSignificand = 0;
         if(isDoublePrecision) {
             endExponent = 12;
             beginSignificand = 12;
             endSignificand = 64;
+<<<<<<< HEAD
         } else if(isSinglePrecision) {
             endExponent = 9;
             beginSignificand = 9;
@@ -331,6 +341,12 @@ public class BuiltinFloatOperations {
             endExponent = 6;
             beginSignificand = 6;
             endSignificand = 16;
+=======
+        } else {
+            endExponent = 9;
+            beginSignificand = 9;
+            endSignificand = 32;
+>>>>>>> port all changes from k-legacy to k5: The changes are related to implementation of machine float hooks
         }
 
         BitVector biasedExponentBV = term.extract(beginExponent, endExponent);
@@ -393,12 +409,21 @@ public class BuiltinFloatOperations {
         int termExponentBits = term.exponent();
 
         // Sanity Checks.
+<<<<<<< HEAD
         if(bitwidth.intValue() != 16 && bitwidth.intValue() != 32 && bitwidth.intValue() != 64) {
             throw new IllegalArgumentException("Illegal bitwidth provided: Only 16 or 32 or 64 are supported");
         }
 
         int expectedPrecision    = (bitwidth.intValue() == 32)? 24: (bitwidth.intValue() == 64)? 53:11;
         int expectedExponentBits = (bitwidth.intValue() == 32)? 8 : (bitwidth.intValue() == 64)? 11:5;
+=======
+        if(bitwidth.intValue() != 32 && bitwidth.intValue() != 64) {
+            throw new IllegalArgumentException("Illegal bitwidth provided: Only 32 or 64 are supported");
+        }
+
+        int expectedPrecision = (bitwidth.intValue() == 32)? 24 : 53;
+        int expectedExponentBits = (bitwidth.intValue() == 32)? 8 : 11;
+>>>>>>> port all changes from k-legacy to k5: The changes are related to implementation of machine float hooks
 
         if(termPrecision != expectedPrecision || termExponentBits != expectedExponentBits) {
             throw new IllegalArgumentException("mismatch precision or exponent bits: "
