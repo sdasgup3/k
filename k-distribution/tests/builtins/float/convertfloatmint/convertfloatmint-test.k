@@ -1,4 +1,5 @@
 // Copyright (c) 2018 K Team. All Rights Reserved.
+>>>>>>> port all changes from k-legacy to k5: The changes are related to implementation of machine float hooks
 requires "domains.k"
 
 module CONVERTFLOATMINT-TEST-SYNTAX
