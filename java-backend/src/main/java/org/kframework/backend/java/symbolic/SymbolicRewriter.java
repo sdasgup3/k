@@ -598,11 +598,21 @@ public class SymbolicRewriter {
         queue.add(initialTerm);
         boolean guarded = false;
         int step = 0;
+
+        System.out.println("\nInitialTerm: ");
+        System.out.println(initialTerm);
+        System.out.println("\nTargetTerm: ");
+        System.out.println(targetTerm);
+        System.out.println("\n");
         while (!queue.isEmpty()) {
             step++;
             for (ConstrainedTerm term : queue) {
+                System.out.println("\nIntermediateTerm: ");
+                System.out.println(term);
                 if (term.implies(targetTerm)) {
                     successPaths++;
+                    System.out.println("\nFinalTerm: ");
+                    System.out.println(term);
                     continue;
                 }
 
