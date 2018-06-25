@@ -113,6 +113,7 @@ public class    KILtoSMTLib extends CopyOnWriteTransformer {
             "bvuge",
             "bvsge",
             "bv2int",
+            "mi",
             /* bit vector extras */
             "mint_signed_of_unsigned",
             /* string theory */
@@ -416,7 +417,7 @@ public class    KILtoSMTLib extends CopyOnWriteTransformer {
                 sb.append(left);
                 sb.append(" ");
                 sb.append(right);
-                sb.append(")");
+                sb.append(")\n");
                 isEmptyAdd = false;
             } catch (UnsupportedOperationException e) {
                 // TODO(AndreiS): fix this translation and the exceptions
@@ -475,9 +476,16 @@ public class    KILtoSMTLib extends CopyOnWriteTransformer {
         if (kLabel.label().equals("_[_<-_]") && krunOptions.experimental.smt.mapAsIntArray) {
             label = "store";
         }
-        if (label == null) {
-            throw new UnsupportedOperationException("missing SMTLib translation for " + kLabel);
+        /*
+        if(kLabel.label().equals("mi")) {
+            int w = ((IntToken) kList.get(0)).intValue();
+            label = "mi" + w;
         }
+        */
+            if (label == null){
+                throw new UnsupportedOperationException("missing SMTLib translation for " + kLabel);
+            }
+
 
         if (krunOptions.experimental.smt.floatsAsPO) {
             switch (kLabel.label()) {
@@ -533,6 +541,26 @@ public class    KILtoSMTLib extends CopyOnWriteTransformer {
                 label = "(_ extract " + endIndex + " " + beginIndex + ")";
                 arguments = ImmutableList.of(kList.get(0));
                 break;
+                /*
+            case "mi":
+                label = "";
+                int w = ((IntToken) kList.get(0)).intValue();
+                if(w != 32) {
+                    throw new UnsupportedOperationException("missing SMTLib translation for " + kLabel);
+                }
+                arguments = ImmutableList.of(kList.get(1));
+                StringBuilder sb = new StringBuilder();
+                //sb.append("(");
+                sb.append(label);
+                for (Term argument : arguments) {
+                    sb.append(" ");
+                    sb.append(translate(argument).expression());
+                }
+                //sb.append(")");
+                return new SMTLibTerm(sb.toString());
+
+                //break;
+                */
             default:
                 arguments = kList.getContents();
         }

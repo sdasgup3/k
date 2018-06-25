@@ -1061,7 +1061,7 @@ module MINT
    * bit width represented in 2's complement. */
 
   /*@ Machine integer of bit width and value. */
-  syntax MInt ::= mi(Int, Int)    [function, hook(MINT.constructor)]
+  syntax MInt ::= mi(Int, Int)    [function, hook(MINT.constructor), smtlib(mi)]
 
   /*@ Function returning the bit width of this machine integer. */
   syntax Int ::= bitwidthMInt(MInt)   [function, functional, hook(MINT.bitwidth)]
