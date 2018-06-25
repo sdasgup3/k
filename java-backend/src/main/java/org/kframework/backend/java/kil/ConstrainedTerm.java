@@ -150,8 +150,16 @@ public class ConstrainedTerm extends JavaSymbolicObject {
             }
         }
 
+        ConjunctiveFormula constraint2 = ConjunctiveFormula.of(constrainedTerm.termContext().global())
+                .add(data.constraint)
+                .add(constrainedTerm.data.constraint)
+                .simplifyBeforePatternFolding(context);
+        if (constraint2.isFalse()) {
+            return null;
+        }
+
         // evaluate/simplify equalities
-        context.setTopConstraint(data.constraint);
+        context.setTopConstraint(constraint2);
         for (Equality equality : constraint.equalities()) {
             Term equalityTerm = equality.toK();
             Term evaluatedTerm = equalityTerm.evaluate(context);
