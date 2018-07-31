@@ -466,6 +466,7 @@ module FLOAT
   syntax Float ::= MInt2Float(MInt, Int, Int)    [function, latex({\\it{}MInt2Float}), hook(FLOAT.mint2float)]
   syntax MInt ::= Float2MInt(Float, Int)    [function, latex({\\it{}Float2MInt}), hook(FLOAT.float2mint)]
   syntax Float ::= Float2Double(Float)    [function, latex({\\it{}Float2Double}), hook(FLOAT.float2double)]
+  syntax Float ::= Double2Float(Float)    [function, latex({\\it{}Float2Double}), hook(FLOAT.double2float)]
 
   rule sqrtFloat(F:Float) => rootFloat(F, 2)
 
@@ -1061,7 +1062,7 @@ module MINT
    * bit width represented in 2's complement. */
 
   /*@ Machine integer of bit width and value. */
-  syntax MInt ::= mi(Int, Int)    [function, hook(MINT.constructor), smtlib(mi)]
+  syntax MInt ::= mi(Int, Int)    [function, hook(MINT.constructor)]
 
   /*@ Function returning the bit width of this machine integer. */
   syntax Int ::= bitwidthMInt(MInt)   [function, functional, hook(MINT.bitwidth)]
