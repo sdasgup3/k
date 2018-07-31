@@ -9,11 +9,10 @@
 ; bool to int
 (define-fun smt_bool2int ((b Bool)) Int (ite b 1 0))
 
-(declare-sort MInt)
-(declare-fun mi (Int Int) (_ BitVec 32))
-
-;(declare-fun mi32 (Int Int) (_ BitVec 32))
-;(declare-fun mi64 (Int Int) (_ BitVec 64))
+(declare-fun mi32 (Int Int) (_ BitVec 32))
+(declare-fun mi33 (Int Int) (_ BitVec 33))
+(declare-fun mi64 (Int Int) (_ BitVec 64))
+(declare-fun mi65 (Int Int) (_ BitVec 65))
 
 ; set axioms
 (declare-sort IntSet)

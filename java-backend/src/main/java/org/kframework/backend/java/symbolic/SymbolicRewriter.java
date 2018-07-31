@@ -607,7 +607,7 @@ public class SymbolicRewriter {
         while (!queue.isEmpty()) {
             step++;
             for (ConstrainedTerm term : queue) {
-                System.out.println("\nIntermediateTerm: ");
+                //System.out.println("\nIntermediateTerm: ");
                 System.out.println(term);
                 if (term.implies(targetTerm)) {
                     successPaths++;

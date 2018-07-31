@@ -113,7 +113,10 @@ public class    KILtoSMTLib extends CopyOnWriteTransformer {
             "bvuge",
             "bvsge",
             "bv2int",
-            "mi",
+            "mi32",
+            "mi33",
+            "mi64",
+            "mi65",
             /* bit vector extras */
             "mint_signed_of_unsigned",
             /* string theory */
@@ -476,15 +479,13 @@ public class    KILtoSMTLib extends CopyOnWriteTransformer {
         if (kLabel.label().equals("_[_<-_]") && krunOptions.experimental.smt.mapAsIntArray) {
             label = "store";
         }
-        /*
         if(kLabel.label().equals("mi")) {
             int w = ((IntToken) kList.get(0)).intValue();
             label = "mi" + w;
         }
-        */
-            if (label == null){
-                throw new UnsupportedOperationException("missing SMTLib translation for " + kLabel);
-            }
+        if (label == null) {
+            throw new UnsupportedOperationException("missing SMTLib translation for " + kLabel);
+        }
 
 
         if (krunOptions.experimental.smt.floatsAsPO) {
