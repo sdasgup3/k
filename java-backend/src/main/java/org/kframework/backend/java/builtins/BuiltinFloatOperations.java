@@ -245,6 +245,18 @@ public class BuiltinFloatOperations {
     }
 
     /**
+     * double2float converts {@code term} from a double precision floating point value to single
+     * precision value.
+     */
+    public static FloatToken double2float(FloatToken term, TermContext context) {
+
+        BigFloat inputFP = term.bigFloatValue();
+        float floatVal = inputFP.floatValue();
+        BinaryMathContext mc = new BinaryMathContext(24, 8);
+        return FloatToken.of(new BigFloat(floatVal, mc), 8);
+    }
+
+    /**
      * mint2float converts a Bitvector or MInt {@code term} to an single or double precision float point value.
      */
     public static FloatToken mint2float(BitVector term, IntToken precision, IntToken exponentBits, TermContext context) {
