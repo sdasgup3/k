@@ -118,7 +118,7 @@ public class DefinitionParsing {
 
         Module modWithConfig;
         ResolveConfig resolveConfig = new ResolveConfig(definition.getParsedDefinition(), isStrict, this::parseBubble, this::getParser);
-        gen = new RuleGrammarGenerator(definition.getParsedDefinition(), isStrict);
+        gen = new RuleGrammarGenerator(definition.getParsedDefinition());
 
         try {
             def = DefinitionTransformer.from(resolveConfig::apply, "parse config bubbles").apply(def);
@@ -161,7 +161,7 @@ public class DefinitionParsing {
         Definition trimmed = Definition(parsedDefinition.mainModule(), modules.collect(Collections.toSet()),
                 parsedDefinition.att());
         Definition afterResolvingConfigBubbles = resolveConfigBubbles(trimmed, parsedDefinition.getModule("DEFAULT-CONFIGURATION").get());
-        RuleGrammarGenerator gen = new RuleGrammarGenerator(afterResolvingConfigBubbles, isStrict);
+        RuleGrammarGenerator gen = new RuleGrammarGenerator(afterResolvingConfigBubbles);
         Definition afterResolvingAllOtherBubbles = resolveNonConfigBubbles(afterResolvingConfigBubbles, gen);
         saveCachesAndReportParsingErrors();
         return afterResolvingAllOtherBubbles;
@@ -221,7 +221,7 @@ public class DefinitionParsing {
         }
 
         ResolveConfig resolveConfig = new ResolveConfig(definitionWithConfigBubble, isStrict, this::parseBubble, this::getParser);
-        gen = new RuleGrammarGenerator(definitionWithConfigBubble, isStrict);
+        gen = new RuleGrammarGenerator(definitionWithConfigBubble);
 
         try {
             Definition defWithConfig = DefinitionTransformer.from(resolveConfig::apply, "parsing configurations").apply(definitionWithConfigBubble);
@@ -256,15 +256,15 @@ public class DefinitionParsing {
                 .map(b -> (Bubble) b)
                 .filter(b -> !b.sentenceType().equals("config")).count() == 0)
             return module;
-        if (!scanner.getModule().importedModuleNames().contains(module.name())) {
-            // this scanner is not good for this module, so we must generate a new scanner.
-            scanner = null;
-        }
-        Scanner realScanner = scanner;
+
         Module ruleParserModule = gen.getRuleGrammar(module);
 
         ParseCache cache = loadCache(ruleParserModule);
-        ParseInModule parser = RuleGrammarGenerator.getCombinedGrammar(cache.getModule(), gen.strict);
+        ParseInModule parser = RuleGrammarGenerator.getCombinedGrammar(cache.getModule(), isStrict);
+
+        // this scanner is not good for this module, so we must generate a new scanner.
+        boolean needNewScanner = !scanner.getModule().importedModuleNames().contains(module.name());
+        final Scanner realScanner = needNewScanner ? parser.getScanner() : scanner;
 
         Set<Sentence> ruleSet = stream(module.localSentences())
                 .parallel()
@@ -284,20 +284,29 @@ public class DefinitionParsing {
                 .map(this::upContext)
                 .collect(Collections.toSet());
 
+        if (needNewScanner) {
+            realScanner.close();//required for Windows.
+        }
+
         return Module(module.name(), module.imports(),
                 stream((Set<Sentence>) module.localSentences().$bar(ruleSet).$bar(contextSet)).filter(b -> !(b instanceof Bubble)).collect(Collections.toSet()), module.att());
     }
 
     public Rule parseRule(CompiledDefinition compiledDef, String contents, Source source) {
         errors = java.util.Collections.synchronizedSet(Sets.newHashSet());
-        gen = new RuleGrammarGenerator(compiledDef.kompiledDefinition, isStrict);
-        java.util.Set<K> res = performParse(new HashMap<>(), RuleGrammarGenerator.getCombinedGrammar(gen.getRuleGrammar(compiledDef.executionModule()), isStrict),
-                null, new Bubble("rule", contents, Att().add("contentStartLine", Integer.class, 1).add("contentStartColumn", Integer.class, 1).add(Source.class, source)))
-                .collect(Collectors.toSet());
-        if (!errors.isEmpty()) {
-            throw errors.iterator().next();
+        gen = new RuleGrammarGenerator(compiledDef.kompiledDefinition);
+        ParseInModule parser = RuleGrammarGenerator
+                .getCombinedGrammar(gen.getRuleGrammar(compiledDef.executionModule()), isStrict);
+        try (Scanner scanner = parser.getScanner()) { //required for Windows.
+            java.util.Set<K> res = performParse(new HashMap<>(), parser, scanner,
+                    new Bubble("rule", contents, Att().add("contentStartLine", Integer.class, 1)
+                            .add("contentStartColumn", Integer.class, 1).add(Source.class, source)))
+                    .collect(Collectors.toSet());
+            if (!errors.isEmpty()) {
+                throw errors.iterator().next();
+            }
+            return upRule(res.iterator().next());
         }
-        return upRule(res.iterator().next());
     }
 
     private Rule upRule(K contents) {
@@ -350,7 +359,9 @@ public class DefinitionParsing {
     private Stream<? extends K> parseBubble(Module module, Bubble b) {
         ParseCache cache = loadCache(gen.getConfigGrammar(module));
         ParseInModule parser = RuleGrammarGenerator.getCombinedGrammar(cache.getModule(), isStrict);
-        return performParse(cache.getCache(), parser, null, b);
+        try (Scanner scanner = parser.getScanner()) {
+            return performParse(cache.getCache(), parser, scanner, b);
+        }
     }
 
     private ParseInModule getParser(Module module) {
@@ -369,7 +380,7 @@ public class DefinitionParsing {
             kem.addAllKException(parse.getWarnings().stream().map(e -> e.getKException()).collect(Collectors.toList()));
             return Stream.of(parse.getParse());
         } else {
-            result = parser.parseString(b.contents(), START_SYMBOL, scanner, source, startLine, startColumn, !b.att().contains("macro"));
+            result = parser.parseString(b.contents(), START_SYMBOL, scanner, source, startLine, startColumn, !b.att().contains("macro") && !b.att().contains("alias"));
             parsedBubbles.getAndIncrement();
             kem.addAllKException(result._2().stream().map(e -> e.getKException()).collect(Collectors.toList()));
             if (result._1().isRight()) {
