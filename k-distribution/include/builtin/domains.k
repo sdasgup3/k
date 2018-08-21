@@ -466,7 +466,9 @@ module FLOAT
   syntax Float ::= MInt2Float(MInt, Int, Int)    [function, latex({\\it{}MInt2Float}), hook(FLOAT.mint2float)]
   syntax MInt ::= Float2MInt(Float, Int)    [function, latex({\\it{}Float2MInt}), hook(FLOAT.float2mint)]
   syntax Float ::= Float2Double(Float)    [function, latex({\\it{}Float2Double}), hook(FLOAT.float2double)]
-  syntax Float ::= Double2Float(Float)    [function, latex({\\it{}Float2Double}), hook(FLOAT.double2float)]
+  syntax Float ::= Double2Float(Float)    [function, latex({\\it{}Double2Float}), hook(FLOAT.double2float)]
+  syntax Float ::= Half2Float(Float)    [function, latex({\\it{}Half2Float}), hook(FLOAT.half2float)]
+  syntax Float ::= Float2Half(Float, Int)    [function, latex({\\it{}Half2Float}), hook(FLOAT.float2half)]
 
   rule sqrtFloat(F:Float) => rootFloat(F, 2)
 

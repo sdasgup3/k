@@ -257,6 +257,39 @@ public class BuiltinFloatOperations {
     }
 
     /**
+     * half2float converts {@code term} from a half precision floating point value to single
+     * precision value.
+     */
+    public static FloatToken half2float(FloatToken term, TermContext context) {
+
+        BigFloat inputFP = term.bigFloatValue();
+        float floatVal = inputFP.floatValue();
+        BinaryMathContext mc = new BinaryMathContext(24, 8);
+        return FloatToken.of(new BigFloat(floatVal, mc), 8);
+    }
+
+    /**
+     * half2float converts {@code term} from a half precision floating point value to single
+     * precision value.
+     */
+    public static FloatToken float2half(FloatToken term, IntToken roundMode, TermContext context) {
+
+        BigFloat inputFP = term.bigFloatValue();
+        BinaryMathContext mc;
+
+        if(0 == roundMode.intValue()) {
+            mc =  new BinaryMathContext(11, 5, RoundingMode.HALF_EVEN);
+        } else if(1 == roundMode.intValue()) {
+            mc =  new BinaryMathContext(11, 5, RoundingMode.FLOOR);
+        } else if(2 == roundMode.intValue()) {
+            mc =  new BinaryMathContext(11, 5, RoundingMode.CEILING);
+        } else {
+            mc =  new BinaryMathContext(11, 5, RoundingMode.DOWN);
+        }
+        return FloatToken.of(term.bigFloatValue().round(mc), 5);
+    }
+
+    /**
      * mint2float converts a Bitvector or MInt {@code term} to an single or double precision float point value.
      */
     public static FloatToken mint2float(BitVector term, IntToken precision, IntToken exponentBits, TermContext context) {
@@ -271,9 +304,9 @@ public class BuiltinFloatOperations {
             throw new IllegalArgumentException("A float with requested precision and exponentBit cannot be obtained from the input MInt");
         }
 
-        if(termBitwidth != 32 && termBitwidth != 64) {
+        if(termBitwidth != 32 && termBitwidth != 64 && termBitwidth != 16) {
             throw new IllegalArgumentException("Illegal bitwidth provided: "
-                    + "Only 32 or 64 are supported in order to obtain a single precision or double precision floating point value");
+                    + "Only 16 or 32 or 64 are supported in order to obtain a half precision or single precision or double precision floating point value");
         }
 
         // Determine the sign.
@@ -282,15 +315,22 @@ public class BuiltinFloatOperations {
         // Determine if a double or single precision floating point is requested and fix constants
         // based on them.
         boolean isDoublePrecision = (precision.intValue() == 53 && exponentBits.intValue() == 11);
+        boolean isSinglePrecision = (precision.intValue() == 24 && exponentBits.intValue() == 8);
+        boolean isHalfPrecision   = (precision.intValue() == 11 && exponentBits.intValue() == 5);
+
         int beginExponent = 1, endExponent = 0 , beginSignificand = 0 , endSignificand = 0;
         if(isDoublePrecision) {
             endExponent = 12;
             beginSignificand = 12;
             endSignificand = 64;
-        } else {
+        } else if(isSinglePrecision) {
             endExponent = 9;
             beginSignificand = 9;
             endSignificand = 32;
+        } else if (isHalfPrecision) {
+            endExponent = 6;
+            beginSignificand = 6;
+            endSignificand = 16;
         }
 
         BitVector biasedExponentBV = term.extract(beginExponent, endExponent);
@@ -353,12 +393,12 @@ public class BuiltinFloatOperations {
         int termExponentBits = term.exponent();
 
         // Sanity Checks.
-        if(bitwidth.intValue() != 32 && bitwidth.intValue() != 64) {
-            throw new IllegalArgumentException("Illegal bitwidth provided: Only 32 or 64 are supported");
+        if(bitwidth.intValue() != 16 && bitwidth.intValue() != 32 && bitwidth.intValue() != 64) {
+            throw new IllegalArgumentException("Illegal bitwidth provided: Only 16 or 32 or 64 are supported");
         }
 
-        int expectedPrecision = (bitwidth.intValue() == 32)? 24 : 53;
-        int expectedExponentBits = (bitwidth.intValue() == 32)? 8 : 11;
+        int expectedPrecision    = (bitwidth.intValue() == 32)? 24: (bitwidth.intValue() == 64)? 53:11;
+        int expectedExponentBits = (bitwidth.intValue() == 32)? 8 : (bitwidth.intValue() == 64)? 11:5;
 
         if(termPrecision != expectedPrecision || termExponentBits != expectedExponentBits) {
             throw new IllegalArgumentException("mismatch precision or exponent bits: "
