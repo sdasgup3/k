@@ -417,6 +417,8 @@ module FLOAT
 
   syntax Bool ::= signFloat(Float)      [function, functional, hook(FLOAT.sign)]
                 | isNaN(Float)          [function, functional, smtlib((not (== #1 #1))), hook(FLOAT.isNaN)]
+                | isNegativeZero(Float)          [function, functional, smtlib((not (== #1 #1))), hook(FLOAT.isNegativeZero)]
+                | isPositiveZero(Float)          [function, functional, smtlib((not (== #1 #1))), hook(FLOAT.isPositiveZero)]
                 | isInfinite(Float)     [function, functional]
   syntax MInt ::= significandFloat(Float) [function, hook(FLOAT.significand)]
 

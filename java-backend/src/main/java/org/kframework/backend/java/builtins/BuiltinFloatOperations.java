@@ -449,6 +449,14 @@ public class BuiltinFloatOperations {
         return BoolToken.of(term.bigFloatValue().isNaN());
     }
 
+    public static BoolToken isNegativeZero(FloatToken term, TermContext context) {
+        return BoolToken.of(term.bigFloatValue().isNegativeZero());
+    }
+
+    public static BoolToken isPositiveZero(FloatToken term, TermContext context) {
+        return BoolToken.of(term.bigFloatValue().isPositiveZero());
+    }
+
     public static FloatToken maxValue(IntToken precision, IntToken exponentBits, TermContext context) {
         BinaryMathContext mc = new BinaryMathContext(precision.intValue(), exponentBits.intValue());
         return FloatToken.of(BigFloat.maxValue(mc.precision, mc.maxExponent), exponentBits.intValue());
